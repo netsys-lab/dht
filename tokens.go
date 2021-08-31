@@ -30,8 +30,11 @@ func (me tokenServer) createToken(addr Addr, t time.Time) string {
 		panic(ip)
 	}
 	h.Write(ip)
-	ti := t.UnixNano() / int64(me.interval)
+
 	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], uint64(addr.IA().IAInt()))
+	h.Write(b[:])
+	ti := t.UnixNano() / int64(me.interval)
 	binary.BigEndian.PutUint64(b[:], uint64(ti))
 	h.Write(b[:])
 	h.Write(me.secret)

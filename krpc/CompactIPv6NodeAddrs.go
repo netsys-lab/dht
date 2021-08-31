@@ -4,7 +4,7 @@ import "github.com/anacrolix/missinggo/slices"
 
 type CompactIPv6NodeAddrs []NodeAddr
 
-func (CompactIPv6NodeAddrs) ElemSize() int { return 18 }
+func (CompactIPv6NodeAddrs) ElemSize() int { return 8 + 18 }
 
 func (me CompactIPv6NodeAddrs) MarshalBinary() ([]byte, error) {
 	return marshalBinarySlice(slices.Map(func(na NodeAddr) NodeAddr {

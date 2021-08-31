@@ -1,11 +1,13 @@
 package dht
 
 import (
+	"github.com/netsec-ethz/scion-apps/pkg/appnet"
 	"net"
 	"testing"
 
 	"github.com/anacrolix/dht/v2/int160"
 	qt "github.com/frankban/quicktest"
+	"github.com/scionproto/scion/go/lib/snet"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,13 +23,16 @@ func TestTable(t *testing.T) {
 
 	id0 := int160.FromByteString("\x2f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
 	id1 := int160.FromByteString("\x2e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+
+	addr0 := snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: &net.UDPAddr{}}
+	addr1 := snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: &net.UDPAddr{}}
 	n0 := &node{nodeKey: nodeKey{
 		Id:   id0,
-		Addr: NewAddr(&net.UDPAddr{}),
+		Addr: NewAddr(addr0),
 	}}
 	n1 := &node{nodeKey: nodeKey{
 		Id:   id1,
-		Addr: NewAddr(&net.UDPAddr{}),
+		Addr: NewAddr(addr1),
 	}}
 
 	assert.NoError(t, tbl.addNode(n0))

@@ -17,8 +17,10 @@ require (
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/frankban/quicktest v1.11.3
+	github.com/netsec-ethz/scion-apps v0.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/dnscache v0.0.0-20210201191234-295bba877686
+	github.com/scionproto/scion v0.6.0
 	github.com/stretchr/testify v1.7.0
 	github.com/willf/bloom v2.0.3+incompatible
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac

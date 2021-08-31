@@ -29,6 +29,9 @@ import (
 	peer_store "github.com/anacrolix/dht/v2/peer-store"
 	"github.com/anacrolix/dht/v2/traversal"
 	"github.com/anacrolix/dht/v2/types"
+
+	"github.com/netsec-ethz/scion-apps/pkg/appnet"
+	"github.com/scionproto/scion/go/lib/snet"
 )
 
 // A Server defines parameters for a DHT node server that is able to send
@@ -40,7 +43,7 @@ import (
 // default node.
 type Server struct {
 	id          int160.T
-	socket      net.PacketConn
+	socket      *snet.Conn
 	resendDelay func() time.Duration
 
 	mu           sync.RWMutex
@@ -176,8 +179,15 @@ func NewServer(c *ServerConfig) (s *Server, err error) {
 		c = NewDefaultServerConfig()
 	}
 	if c.Conn == nil {
-		c.Conn, err = net.ListenPacket("udp", ":0")
-		if err != nil {
+		udpAddr, errParse := net.ResolveUDPAddr("udp", ":0")
+		if errParse != nil {
+			fmt.Errorf("error when attemping to listen")
+			return
+		}
+		con, errListen := appnet.Listen(udpAddr)
+		c.Conn = con
+		if errListen != nil {
+			fmt.Errorf("error when attemping to listen")
 			return
 		}
 	}
@@ -321,18 +331,19 @@ func (s *Server) serve() error {
 			logonce.Stderr.Printf("received dht packet exceeds buffer size")
 			continue
 		}
-		if missinggo.AddrPort(addr) == 0 {
+		if addr.(*snet.UDPAddr).Host.Port == 0 {
 			readZeroPort.Add(1)
 			continue
 		}
 		s.mu.Lock()
-		blocked := s.ipBlocked(missinggo.AddrIP(addr))
+		blocked := false
 		s.mu.Unlock()
 		if blocked {
 			readBlocked.Add(1)
 			continue
 		}
-		s.processPacket(b[:n], NewAddr(addr))
+		udpAddr, _ := snet.ParseUDPAddr(addr.String())
+		s.processPacket(b[:n], NewAddr(*udpAddr))
 	}
 }
 
@@ -348,7 +359,8 @@ func (s *Server) ipBlocked(ip net.IP) (blocked bool) {
 func (s *Server) AddNode(ni krpc.NodeInfo) error {
 	id := int160.FromByteArray(ni.ID)
 	if id.IsZero() {
-		go s.Ping(ni.Addr.UDP())
+		addr := ni.Addr.UDP()
+		go s.Ping(&addr)
 		return nil
 	}
 	s.mu.Lock()
@@ -414,7 +426,7 @@ func filterPeers(querySourceIp net.IP, queryWants []krpc.Want, allPeers []krpc.N
 				return nil, false
 			}
 		}(peer.IP); ok {
-			filtered = append(filtered, krpc.NodeAddr{ip, peer.Port})
+			filtered = append(filtered, krpc.NodeAddr{ip, peer.Port, peer.IA})
 		}
 	}
 	return
@@ -521,7 +533,7 @@ func (s *Server) handleQuery(source Addr, m krpc.Msg) {
 		if ps := s.config.PeerStore; ps != nil {
 			go ps.AddPeer(
 				peer_store.InfoHash(args.InfoHash),
-				krpc.NodeAddr{source.IP(), port},
+				krpc.NodeAddr{source.IP(), port, source.IA()},
 			)
 		}
 
@@ -679,7 +691,8 @@ func (s *Server) writeToNode(ctx context.Context, b []byte, node Addr, wait, rat
 			}
 		}
 	}
-	n, err := s.socket.WriteTo(b, node.Raw())
+	addr := node.Raw()
+	n, err := s.socket.WriteTo(b, &addr)
 	writes.Add(1)
 	if rate {
 		expvars.Add("rated writes", 1)
@@ -906,8 +919,8 @@ func (s *Server) transactionQuerySender(
 }
 
 // Sends a ping query to the address given.
-func (s *Server) Ping(node *net.UDPAddr) QueryResult {
-	addr := NewAddr(node)
+func (s *Server) Ping(node *snet.UDPAddr) QueryResult {
+	addr := NewAddr(*node)
 	res := s.Query(context.TODO(), addr, "ping", QueryInput{})
 	if res.Err == nil {
 		id := res.Reply.SenderID()
@@ -1261,13 +1274,12 @@ func (s *Server) TraversalNodeFilter(node addrMaybeId) bool {
 	return s.config.NoSecurity || NodeIdSecure(node.Id.AsByteArray(), node.Addr.IP)
 }
 
-func validNodeAddr(addr net.Addr) bool {
+func validNodeAddr(addr snet.UDPAddr) bool {
 	// At least for UDP addresses, we know what doesn't work.
-	ua := addr.(*net.UDPAddr)
-	if ua.Port == 0 {
+	if addr.Host.Port == 0 {
 		return false
 	}
-	if ip4 := ua.IP.To4(); ip4 != nil && ip4[0] == 0 {
+	if ip4 := addr.Host.IP.To4(); ip4 != nil && ip4[0] == 0 {
 		// Why?
 		return false
 	}

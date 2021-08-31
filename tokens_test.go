@@ -1,6 +1,7 @@
 package dht
 
 import (
+	"github.com/scionproto/scion/go/lib/snet"
 	"net"
 	"testing"
 	"time"
@@ -9,12 +10,12 @@ import (
 )
 
 func TestTokenServer(t *testing.T) {
-	addr1 := NewAddr(&net.UDPAddr{
+	addr1 := NewAddr(snet.UDPAddr{Host: &net.UDPAddr{
 		IP: []byte{1, 2, 3, 4},
-	})
-	addr2 := NewAddr(&net.UDPAddr{
+	}})
+	addr2 := NewAddr(snet.UDPAddr{Host: &net.UDPAddr{
 		IP: []byte{1, 2, 3, 3},
-	})
+	}})
 	ts := tokenServer{
 		secret:           []byte("42"),
 		interval:         5 * time.Minute,

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	stdLog "log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +12,8 @@ import (
 	"github.com/anacrolix/tagflag"
 
 	"github.com/anacrolix/dht/v2"
+	"github.com/netsec-ethz/scion-apps/pkg/appnet"
+	"github.com/scionproto/scion/go/lib/snet"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 		Addr        string `help:"local UDP address"`
 		NoBootstrap bool
 	}{
-		Addr: ":0",
+		Addr: "19-ffaa:1:e4b,[127.0.0.1]:6881",
 	}
 	s *dht.Server
 )
@@ -47,7 +48,8 @@ func main() {
 
 func mainErr() error {
 	tagflag.Parse(&flags)
-	conn, err := net.ListenPacket("udp", flags.Addr)
+	addr, err := snet.ParseUDPAddr(flags.Addr)
+	conn, err := appnet.Listen(addr.Host)
 	if err != nil {
 		return err
 	}

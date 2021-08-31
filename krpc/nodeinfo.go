@@ -5,6 +5,7 @@ import (
 	"encoding"
 	"encoding/binary"
 	"fmt"
+	"github.com/netsec-ethz/scion-apps/pkg/appnet"
 	"math"
 	"math/rand"
 	"net"
@@ -24,6 +25,7 @@ func RandomNodeInfo(ipLen int) (ni NodeInfo) {
 	ni.Addr.IP = make(net.IP, ipLen)
 	rand.Read(ni.Addr.IP)
 	ni.Addr.Port = rand.Intn(math.MaxUint16 + 1)
+	ni.Addr.IA = appnet.DefNetwork().IA
 	return
 }
 
@@ -35,6 +37,7 @@ var _ interface {
 func (ni NodeInfo) MarshalBinary() ([]byte, error) {
 	var w bytes.Buffer
 	w.Write(ni.ID[:])
+	binary.Write(&w, binary.BigEndian, uint64(ni.Addr.IA.IAInt()))
 	w.Write(ni.Addr.IP)
 	binary.Write(&w, binary.BigEndian, uint16(ni.Addr.Port))
 	return w.Bytes(), nil

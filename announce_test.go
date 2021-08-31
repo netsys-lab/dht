@@ -3,6 +3,7 @@ package dht
 import (
 	"context"
 	"crypto/rand"
+	"github.com/scionproto/scion/go/lib/snet"
 	"net"
 	"testing"
 	"time"
@@ -31,10 +32,12 @@ func randomInfohash() (ih [20]byte) {
 }
 
 func TestAnnounceStopsNoPending(t *testing.T) {
+	startingNodeAddr, _ := net.ResolveUDPAddr("udp", ":0")
+	startingNodeAddr.IP = []byte{1, 2, 3, 4}
 	s, err := NewServer(&ServerConfig{
 		Conn: mustListen(":0"),
 		StartingNodes: func() ([]Addr, error) {
-			return []Addr{NewAddr(&net.TCPAddr{})}, nil
+			return []Addr{NewAddr(snet.UDPAddr{Host: startingNodeAddr})}, nil
 		},
 	})
 	require.NoError(t, err)

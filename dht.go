@@ -1,10 +1,8 @@
 package dht
 
 import (
-	"context"
 	"crypto"
 	_ "crypto/sha1"
-	"errors"
 	"math/rand"
 	"net"
 	"time"
@@ -17,6 +15,7 @@ import (
 	"github.com/anacrolix/torrent/metainfo"
 
 	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/scionproto/scion/go/lib/snet"
 )
 
 func defaultQueryResendDelay() time.Duration {
@@ -37,7 +36,7 @@ type ServerConfig struct {
 	// Set NodeId Manually. Caller must ensure that if NodeId does not conform
 	// to DHT Security Extensions, that NoSecurity is also set.
 	NodeId krpc.ID
-	Conn   net.PacketConn
+	Conn   *snet.Conn
 	// Don't respond to queries from other nodes.
 	Passive       bool
 	StartingNodes StartingNodesGetter
@@ -51,7 +50,7 @@ type ServerConfig struct {
 	PublicIP net.IP
 
 	// Hook received queries. Return false if you don't want to propagate to the default handlers.
-	OnQuery func(query *krpc.Msg, source net.Addr) (propagate bool)
+	OnQuery func(query *krpc.Msg, source snet.UDPAddr) (propagate bool)
 	// Called when a peer successfully announces to us.
 	OnAnnouncePeer func(infoHash metainfo.Hash, ip net.IP, port int, portOk bool)
 	// How long to wait before resending queries that haven't received a response. Defaults to a
@@ -92,35 +91,6 @@ type Peer = krpc.NodeAddr
 
 func GlobalBootstrapAddrs(network string) (addrs []Addr, err error) {
 	initDnsResolver()
-	for _, s := range []string{
-		"router.utorrent.com:6881",
-		"router.bittorrent.com:6881",
-		"dht.transmissionbt.com:6881",
-		"dht.aelitis.com:6881",     // Vuze
-		"router.silotis.us:6881",   // IPv6
-		"dht.libtorrent.org:25401", // @arvidn's
-	} {
-		host, port, err := net.SplitHostPort(s)
-		if err != nil {
-			panic(err)
-		}
-		hostAddrs, err := dnsResolver.LookupHost(context.Background(), host)
-		if err != nil {
-			//log.Default.WithDefaultLevel(log.Debug).Printf("error looking up %q: %v", s, err)
-			continue
-		}
-		for _, a := range hostAddrs {
-			ua, err := net.ResolveUDPAddr("udp", net.JoinHostPort(a, port))
-			if err != nil {
-				log.Printf("error resolving %q: %v", a, err)
-				continue
-			}
-			addrs = append(addrs, NewAddr(ua))
-		}
-	}
-	if len(addrs) == 0 {
-		err = errors.New("nothing resolved")
-	}
 	return
 }
 
