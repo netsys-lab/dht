@@ -9,7 +9,7 @@ type (
 )
 
 func (CompactIPv6NodeInfo) ElemSize() int {
-	return 38
+	return 8 + 38
 }
 
 func (me CompactIPv6NodeInfo) MarshalBinary() ([]byte, error) {

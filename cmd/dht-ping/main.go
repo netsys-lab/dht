@@ -4,13 +4,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"net"
 	"sync"
 	"time"
 
 	"github.com/anacrolix/tagflag"
 
 	"github.com/anacrolix/dht/v2"
+	"github.com/scionproto/scion/go/lib/snet"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, a := range args.Nodes {
 		func(a string) {
-			ua, err := net.ResolveUDPAddr("udp", a)
+			ua, err := snet.ParseUDPAddr(a)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -45,7 +45,7 @@ func main() {
 				}
 				id := *res.Reply.SenderID()
 				fmt.Printf("%s: %x %c: %s\n", a, id, func() rune {
-					if dht.NodeIdSecure(id, ua.IP) {
+					if dht.NodeIdSecure(id, ua.Host.IP) {
 						return '✔'
 					} else {
 						return '✘'

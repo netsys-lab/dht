@@ -3,6 +3,7 @@ package krpc
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/scionproto/scion/go/lib/addr"
 	"math"
 	"net"
 	"strings"
@@ -42,6 +43,9 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 	//	"y": "r"
 	//}
 	// Test BEP 51 features
+	zeroIa, err := addr.IAFromString("0-0")
+	require.NoError(t, err)
+	zeroIaStr := "\x00\x00\x00\x00\x00\x00\x00\x00"
 	testMarshalUnmarshalMsg(t, Msg{
 		R: &Return{
 			ID: IdFromString("hellohellohellohello"),
@@ -78,6 +82,7 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 				Nodes: CompactIPv4NodeInfo{
 					NodeInfo{
 						Addr: NodeAddr{
+							IA:   zeroIa,
 							IP:   net.IPv4(1, 2, 3, 4).To4(),
 							Port: 0x1234,
 						},
@@ -85,19 +90,20 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 				},
 			},
 		},
-		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005:nodes26:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x124e1:t2:\x8c%1:y1:re")
+		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005:nodes34:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"+zeroIaStr+"\x01\x02\x03\x04\x124e1:t2:\x8c%1:y1:re")
 	testMarshalUnmarshalMsg(t, Msg{
 		Y: "r",
 		T: "\x8c%",
 		R: &Return{
 			Values: []NodeAddr{
 				{
+					IA:   zeroIa,
 					IP:   net.IPv4(1, 2, 3, 4).To4(),
 					Port: 0x5678,
 				},
 			},
 		},
-	}, "d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x006:valuesl6:\x01\x02\x03\x04\x56\x78ee1:t2:\x8c%1:y1:re")
+	}, "d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x006:valuesl14:"+zeroIaStr+"\x01\x02\x03\x04\x56\x78ee1:t2:\x8c%1:y1:re")
 	testMarshalUnmarshalMsg(t, Msg{
 		Y: "r",
 		T: "\x03",
@@ -105,10 +111,11 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 			ID: IdFromString("\xeb\xff6isQ\xffJ\xec)ͺ\xab\xf2\xfb\xe3F|\xc2g"),
 		},
 		IP: NodeAddr{
+			IA:   zeroIa,
 			IP:   net.IPv4(124, 168, 180, 8).To4(),
 			Port: 62844,
 		},
-	}, "d2:ip6:|\xa8\xb4\b\xf5|1:rd2:id20:\xeb\xff6isQ\xffJ\xec)ͺ\xab\xf2\xfb\xe3F|\xc2ge1:t1:\x031:y1:re")
+	}, "d2:ip14:"+zeroIaStr+"|\xa8\xb4\b\xf5|1:rd2:id20:\xeb\xff6isQ\xffJ\xec)ͺ\xab\xf2\xfb\xe3F|\xc2ge1:t1:\x031:y1:re")
 }
 
 func TestMsgReadOnly(t *testing.T) {
@@ -125,7 +132,8 @@ func TestMsgReadOnly(t *testing.T) {
 
 func TestUnmarshalGetPeersResponse(t *testing.T) {
 	var msg Msg
-	err := bencode.Unmarshal([]byte("d1:rd6:valuesl6:\x01\x02\x03\x04\x05\x066:\x07\x08\x09\x0a\x0b\x0ce5:nodes52:\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee"), &msg)
+	zeroIaStr := "\x00\x00\x00\x00\x00\x00\x00\x00"
+	err := bencode.Unmarshal([]byte("d1:rd6:valuesl14:"+zeroIaStr+"\x01\x02\x03\x04\x05\x0614:"+zeroIaStr+"\x07\x08\x09\x0a\x0b\x0ce5:nodes68:"+zeroIaStr+"\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07"+zeroIaStr+"\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee"), &msg)
 	require.NoError(t, err)
 	assert.Len(t, msg.R.Values, 2)
 	assert.Len(t, msg.R.Nodes, 2)

@@ -3,6 +3,9 @@ package dht
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"github.com/netsec-ethz/scion-apps/pkg/appnet"
+	"github.com/scionproto/scion/go/lib/snet"
 	"io"
 	"math/big"
 	"net"
@@ -10,7 +13,6 @@ import (
 	"time"
 
 	_ "github.com/anacrolix/envpprof"
-	"github.com/anacrolix/missinggo/inproc"
 	"github.com/anacrolix/sync"
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/stretchr/testify/assert"
@@ -37,9 +39,9 @@ func TestMarshalCompactNodeInfo(t *testing.T) {
 	cni[0].Addr.IP = cni[0].Addr.IP.To4()
 	b, err := cni.MarshalBinary()
 	require.NoError(t, err)
-	var bb [26]byte
+	var bb [34]byte
 	copy(bb[:], []byte("abc"))
-	copy(bb[20:], []byte("\x01\x02\x03\x04\x00\x05"))
+	copy(bb[28:], []byte("\x01\x02\x03\x04\x00\x05"))
 	assert.EqualValues(t, string(bb[:]), string(b))
 }
 
@@ -115,10 +117,9 @@ func TestPing(t *testing.T) {
 	})
 	require.NoError(t, err)
 	defer srv0.Close()
-	res := srv.Ping(&net.UDPAddr{
-		IP:   []byte{127, 0, 0, 1},
-		Port: srv0.Addr().(*net.UDPAddr).Port,
-	})
+
+	udpAddr, _ := net.ResolveUDPAddr("udp", "127.0.0.1:5681")
+	res := srv.Ping(&snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: udpAddr})
 	require.NoError(t, res.Err)
 	require.EqualValues(t, srv0.ID(), *res.Reply.SenderID())
 }
@@ -172,11 +173,12 @@ func TestHook(t *testing.T) {
 	defer pinger.Close()
 	// Establish server with a hook attached to "ping"
 	hookCalled := make(chan struct{}, 1)
+	recAddr := "127.0.0.1:5679"
 	receiver, err := NewServer(&ServerConfig{
-		Conn:          mustListen("127.0.0.1:5679"),
+		Conn:          mustListen(recAddr),
 		PublicIP:      net.IPv4(127, 0, 0, 1),
 		StartingNodes: addrResolver("127.0.0.1:5678"),
-		OnQuery: func(m *krpc.Msg, addr net.Addr) bool {
+		OnQuery: func(m *krpc.Msg, addr snet.UDPAddr) bool {
 			t.Logf("receiver got msg: %v", m)
 			if m.Q == "ping" {
 				select {
@@ -191,10 +193,8 @@ func TestHook(t *testing.T) {
 	defer receiver.Close()
 	// Ping receiver from pinger to trigger hook. Should also receive a response.
 	t.Log("TestHook: Servers created, hook for ping established. Calling Ping.")
-	res := pinger.Ping(&net.UDPAddr{
-		IP:   []byte{127, 0, 0, 1},
-		Port: receiver.Addr().(*net.UDPAddr).Port,
-	})
+	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("127.0.0.1:%d", receiver.Addr().(*net.UDPAddr).Port))
+	res := pinger.Ping(&snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: addr})
 	assert.NoError(t, res.Err)
 	// Await signal that hook has been called.
 	select {
@@ -208,34 +208,22 @@ func TestHook(t *testing.T) {
 	}
 }
 
-// Check that address resolution doesn't rat out invalid SendTo addr
-// arguments.
-func TestResolveBadAddr(t *testing.T) {
-	ua, err := net.ResolveUDPAddr("udp", "0.131.255.145:33085")
-	require.NoError(t, err)
-	assert.False(t, validNodeAddr(ua))
-}
-
-func TestGlobalBootstrapAddrs(t *testing.T) {
-	addrs, err := GlobalBootstrapAddrs("udp")
-	if err != nil {
-		t.Skip(err)
-	}
-	for _, a := range addrs {
-		t.Log(a)
-	}
-}
-
 // https://github.com/anacrolix/dht/pull/19
 func TestBadGetPeersResponse(t *testing.T) {
-	pc, err := net.ListenPacket("udp", "localhost:0")
+	//pc, err := net.ListenPacket("udp", "localhost:0")
+	host, _ := net.ResolveUDPAddr("udp", "localhost:7000")
+	//udpAddr := snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: host}
+	pc, err := appnet.Listen(host)
+	pc.LocalAddr()
 	require.NoError(t, err)
 	defer pc.Close()
 	s, err := NewServer(&ServerConfig{
 		StartingNodes: func() ([]Addr, error) {
-			return []Addr{NewAddr(pc.LocalAddr().(*net.UDPAddr))}, nil
+			addr := pc.LocalAddr().(*net.UDPAddr)
+			udpAddr := snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: addr}
+			return []Addr{NewAddr(udpAddr)}, nil
 		},
-		Conn: mustListen("localhost:0"),
+		Conn: mustListen("localhost:7001"),
 	})
 	require.NoError(t, err)
 	defer s.Close()
@@ -258,42 +246,6 @@ func TestBadGetPeersResponse(t *testing.T) {
 	// Drain the Announce until it closes.
 	for range a.Peers {
 	}
-}
-
-func TestBootstrapRace(t *testing.T) {
-	remotePc, err := inproc.ListenPacket("", "localhost:0")
-	require.NoError(t, err)
-	defer remotePc.Close()
-	serverPc := bootstrapRacePacketConn{
-		read: make(chan read),
-	}
-	t.Logf("remote addr: %s", remotePc.LocalAddr())
-	s, err := NewServer(&ServerConfig{
-		Conn:             &serverPc,
-		StartingNodes:    addrResolver(remotePc.LocalAddr().String()),
-		QueryResendDelay: func() time.Duration { return 0 },
-		Logger:           log.Default,
-	})
-	require.NoError(t, err)
-	defer s.Close()
-	go func() {
-		for i := 0; i < defaultMaxQuerySends-1; i++ {
-			remotePc.ReadFrom(nil)
-		}
-		var b [1024]byte
-		_, addr, _ := remotePc.ReadFrom(b[:])
-		var m krpc.Msg
-		bencode.Unmarshal(b[:], &m)
-		m.Y = "r"
-		rb, err := bencode.Marshal(m)
-		if err != nil {
-			panic(err)
-		}
-		remotePc.WriteTo(rb, addr)
-	}()
-	ts, err := s.Bootstrap()
-	t.Logf("%#v", ts)
-	require.NoError(t, err)
 }
 
 type emptyNetAddr struct{}
