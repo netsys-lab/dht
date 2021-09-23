@@ -5,8 +5,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/anacrolix/dht/v2/int160"
 	qt "github.com/frankban/quicktest"
+	"github.com/netsys-lab/dht/v2/int160"
 	"github.com/scionproto/scion/go/lib/snet"
 	"github.com/stretchr/testify/assert"
 )

@@ -3,8 +3,8 @@ package containers
 import (
 	"testing"
 
-	"github.com/anacrolix/dht/v2/int160"
-	"github.com/anacrolix/dht/v2/internal/testutil"
+	"github.com/netsys-lab/dht/v2/int160"
+	"github.com/netsys-lab/dht/v2/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 

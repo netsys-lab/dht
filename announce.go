@@ -8,12 +8,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/anacrolix/dht/v2/traversal"
 	"github.com/anacrolix/log"
+	"github.com/netsys-lab/dht/v2/traversal"
 
-	"github.com/anacrolix/dht/v2/int160"
-	dhtutil "github.com/anacrolix/dht/v2/k-nearest-nodes"
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/netsys-lab/dht/v2/int160"
+	dhtutil "github.com/netsys-lab/dht/v2/k-nearest-nodes"
+	"github.com/netsys-lab/dht/v2/krpc"
 )
 
 // Maintains state for an ongoing Announce operation. An Announce is started by calling

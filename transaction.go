@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/netsys-lab/dht/v2/krpc"
 )
 
 var TransactionTimeout = errors.New("transaction timed out")

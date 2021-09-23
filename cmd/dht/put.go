@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/anacrolix/dht/v2"
-	"github.com/anacrolix/dht/v2/exts/getput"
-	"github.com/anacrolix/dht/v2/traversal"
 	"github.com/anacrolix/torrent/bencode"
+	"github.com/netsys-lab/dht/v2"
+	"github.com/netsys-lab/dht/v2/exts/getput"
+	"github.com/netsys-lab/dht/v2/traversal"
 )
 
 type PutCmd struct {

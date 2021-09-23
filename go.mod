@@ -1,4 +1,4 @@
-module github.com/anacrolix/dht/v2
+module github.com/netsys-lab/dht/v2
 
 require (
 	github.com/alexflint/go-arg v1.3.0

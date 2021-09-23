@@ -7,11 +7,11 @@ import (
 	"log"
 	"sync"
 
-	"github.com/anacrolix/dht/v2"
-	k_nearest_nodes "github.com/anacrolix/dht/v2/k-nearest-nodes"
-	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/anacrolix/dht/v2/traversal"
 	"github.com/anacrolix/torrent/bencode"
+	"github.com/netsys-lab/dht/v2"
+	k_nearest_nodes "github.com/netsys-lab/dht/v2/k-nearest-nodes"
+	"github.com/netsys-lab/dht/v2/krpc"
+	"github.com/netsys-lab/dht/v2/traversal"
 )
 
 type PutGetResult struct {
