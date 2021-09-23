@@ -4,15 +4,15 @@ import (
 	"context"
 	"sync/atomic"
 
-	"github.com/anacrolix/dht/v2/containers"
 	"github.com/anacrolix/sync"
+	"github.com/netsys-lab/dht/containers"
 
 	"github.com/anacrolix/chansync"
 
-	"github.com/anacrolix/dht/v2/int160"
-	k_nearest_nodes "github.com/anacrolix/dht/v2/k-nearest-nodes"
-	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/anacrolix/dht/v2/types"
+	"github.com/netsys-lab/dht/int160"
+	k_nearest_nodes "github.com/netsys-lab/dht/k-nearest-nodes"
+	"github.com/netsys-lab/dht/krpc"
+	"github.com/netsys-lab/dht/types"
 )
 
 type QueryResult struct {

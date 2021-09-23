@@ -11,8 +11,8 @@ import (
 	"github.com/anacrolix/log"
 	"github.com/anacrolix/tagflag"
 
-	"github.com/anacrolix/dht/v2"
 	"github.com/netsec-ethz/scion-apps/pkg/appnet"
+	"github.com/netsys-lab/dht"
 	"github.com/scionproto/scion/go/lib/snet"
 )
 

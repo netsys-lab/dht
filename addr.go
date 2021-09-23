@@ -5,7 +5,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/netsys-lab/dht/krpc"
 	"github.com/scionproto/scion/go/lib/addr"
 )
 

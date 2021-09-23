@@ -5,11 +5,11 @@ import (
 	"net"
 	"os"
 
-	"github.com/anacrolix/dht/v2/int160"
-	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/anacrolix/dht/v2/types"
 	"github.com/anacrolix/missinggo/v2/iter"
 	"github.com/netsec-ethz/scion-apps/pkg/appnet"
+	"github.com/netsys-lab/dht/int160"
+	"github.com/netsys-lab/dht/krpc"
+	"github.com/netsys-lab/dht/types"
 )
 
 func addrInOwnIsAs(addr string) (*snet.UDPAddr, error) {

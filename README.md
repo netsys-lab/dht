@@ -1,14 +1,14 @@
 # dht
 
 [![CircleCI](https://circleci.com/gh/anacrolix/dht.svg?style=shield)](https://circleci.com/gh/anacrolix/dht)
-[![Go Reference](https://pkg.go.dev/badge/github.com/anacrolix/dht/v2.svg)](https://pkg.go.dev/github.com/anacrolix/dht/v2)
+[![Go Reference](https://pkg.go.dev/badge/github.com/netsys-lab/dht.svg)](https://pkg.go.dev/github.com/netsys-lab/dht)
 
 This is a fork of [anacrolix dht](https://github.com/anacrolix/dht) adapting the library for use in [SCION Networks](https://www.scion-architecture.net/).
-It was originally forked for usage in the [BitTorrent over SCION](https://github.com/martin31821/torrent) library.
+It was originally forked for usage in the BitTorrent over SCION.
 
 ## Installation
 
-Get the library package with `go get github.com/anacrolix/dht/v2`, or the provided cmds with `go install github.com/anacrolix/dht/v2/cmd/...@latest`.
+Get the library package with `go get github.com/netsys-lab/dht`, or the provided cmds with `go install github.com/netsys-lab/dht/cmd/...@latest`.
 
 ## Commands
 

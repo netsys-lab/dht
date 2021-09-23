@@ -1,9 +1,9 @@
 package testutil
 
 import (
-	"github.com/anacrolix/dht/v2/int160"
-	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/anacrolix/dht/v2/types"
+	"github.com/netsys-lab/dht/int160"
+	"github.com/netsys-lab/dht/krpc"
+	"github.com/netsys-lab/dht/types"
 )
 
 func Int160WithBitSet(bit int) *int160.T {

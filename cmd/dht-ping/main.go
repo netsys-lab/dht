@@ -9,7 +9,7 @@ import (
 
 	"github.com/anacrolix/tagflag"
 
-	"github.com/anacrolix/dht/v2"
+	"github.com/netsys-lab/dht"
 	"github.com/scionproto/scion/go/lib/snet"
 )
 

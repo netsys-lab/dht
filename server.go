@@ -24,11 +24,11 @@ import (
 
 	"github.com/anacrolix/torrent/bencode"
 
-	"github.com/anacrolix/dht/v2/int160"
-	"github.com/anacrolix/dht/v2/krpc"
-	peer_store "github.com/anacrolix/dht/v2/peer-store"
-	"github.com/anacrolix/dht/v2/traversal"
-	"github.com/anacrolix/dht/v2/types"
+	"github.com/netsys-lab/dht/int160"
+	"github.com/netsys-lab/dht/krpc"
+	peer_store "github.com/netsys-lab/dht/peer-store"
+	"github.com/netsys-lab/dht/traversal"
+	"github.com/netsys-lab/dht/types"
 
 	"github.com/netsec-ethz/scion-apps/pkg/appnet"
 	"github.com/scionproto/scion/go/lib/snet"

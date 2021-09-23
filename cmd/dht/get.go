@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/anacrolix/dht/v2"
-	"github.com/anacrolix/dht/v2/exts/getput"
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/netsys-lab/dht"
+	"github.com/netsys-lab/dht/exts/getput"
+	"github.com/netsys-lab/dht/krpc"
 )
 
 type GetCmd struct {

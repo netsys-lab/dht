@@ -7,14 +7,14 @@ import (
 	"net"
 	"time"
 
-	peer_store "github.com/anacrolix/dht/v2/peer-store"
+	peer_store "github.com/netsys-lab/dht/peer-store"
 
 	"github.com/anacrolix/log"
 	"github.com/anacrolix/missinggo/v2"
 	"github.com/anacrolix/torrent/iplist"
 	"github.com/anacrolix/torrent/metainfo"
 
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/netsys-lab/dht/krpc"
 	"github.com/scionproto/scion/go/lib/snet"
 )
 
