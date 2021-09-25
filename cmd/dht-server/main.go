@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	stdLog "log"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 
@@ -13,17 +13,13 @@ import (
 
 	"github.com/netsec-ethz/scion-apps/pkg/appnet"
 	"github.com/netsys-lab/dht"
-	"github.com/scionproto/scion/go/lib/snet"
 )
 
 var (
 	flags = struct {
 		TableFile   string `help:"name of file for storing node info"`
-		Addr        string `help:"local UDP address"`
 		NoBootstrap bool
-	}{
-		Addr: "19-ffaa:1:e4b,[127.0.0.1]:6881",
-	}
+	}{}
 	s *dht.Server
 )
 
@@ -48,8 +44,8 @@ func main() {
 
 func mainErr() error {
 	tagflag.Parse(&flags)
-	addr, err := snet.ParseUDPAddr(flags.Addr)
-	conn, err := appnet.Listen(addr.Host)
+	addr, _ := net.ResolveUDPAddr("udp", os.Getenv("DHT_LISTEN_ADDRESS"))
+	conn, err := appnet.Listen(addr)
 	if err != nil {
 		return err
 	}
@@ -62,9 +58,7 @@ func mainErr() error {
 	if err != nil {
 		return err
 	}
-	http.HandleFunc("/debug/dht", func(w http.ResponseWriter, r *http.Request) {
-		s.WriteStatus(w)
-	})
+
 	if flags.TableFile != "" {
 		err = loadTable()
 		if err != nil {

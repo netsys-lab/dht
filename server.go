@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"runtime/pprof"
 	"strings"
 	"text/tabwriter"
@@ -179,16 +180,12 @@ func NewServer(c *ServerConfig) (s *Server, err error) {
 		c = NewDefaultServerConfig()
 	}
 	if c.Conn == nil {
-		udpAddr, errParse := net.ResolveUDPAddr("udp", ":0")
-		if errParse != nil {
-			fmt.Errorf("error when attemping to listen")
-			return
-		}
-		con, errListen := appnet.Listen(udpAddr)
+		addr, _ := net.ResolveUDPAddr("udp", os.Getenv("DHT_LISTEN_ADDRESS"))
+		con, err := appnet.Listen(addr)
 		c.Conn = con
-		if errListen != nil {
-			fmt.Errorf("error when attemping to listen")
-			return
+		if err != nil {
+			_ = fmt.Errorf("error when attemping to listen")
+			return nil, err
 		}
 	}
 	c.InitNodeId()
@@ -255,6 +252,7 @@ func (s *Server) IPBlocklist() iplist.Ranger {
 }
 
 func (s *Server) processPacket(b []byte, addr Addr) {
+	log.Printf("proccesing packet from: %s", addr.String())
 	if len(b) < 2 || b[0] != 'd' {
 		// KRPC messages are bencoded dicts.
 		readNotKRPCDict.Add(1)
@@ -326,6 +324,7 @@ func (s *Server) serve() error {
 		if err != nil {
 			return err
 		}
+		log.Printf("received packet...")
 		expvars.Add("packets read", 1)
 		if n == len(b) {
 			logonce.Stderr.Printf("received dht packet exceeds buffer size")
@@ -692,6 +691,8 @@ func (s *Server) writeToNode(ctx context.Context, b []byte, node Addr, wait, rat
 		}
 	}
 	addr := node.Raw()
+	log.Printf("setting default path for %s", addr.String())
+	appnet.SetDefaultPath(&addr)
 	n, err := s.socket.WriteTo(b, &addr)
 	writes.Add(1)
 	if rate {

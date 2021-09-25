@@ -210,10 +210,7 @@ func TestHook(t *testing.T) {
 
 // https://github.com/anacrolix/dht/pull/19
 func TestBadGetPeersResponse(t *testing.T) {
-	//pc, err := net.ListenPacket("udp", "localhost:0")
-	host, _ := net.ResolveUDPAddr("udp", "localhost:7000")
-	//udpAddr := snet.UDPAddr{IA: appnet.DefNetwork().IA, Host: host}
-	pc, err := appnet.Listen(host)
+	pc, err := appnet.ListenPort(7000)
 	pc.LocalAddr()
 	require.NoError(t, err)
 	defer pc.Close()
