@@ -527,7 +527,7 @@ func (s *Server) handleQuery(source Addr, m krpc.Msg) {
 		}
 
 		if h := s.config.OnAnnouncePeer; h != nil {
-			go h(metainfo.Hash(args.InfoHash), source.IP(), port, portOk)
+			go h(metainfo.Hash(args.InfoHash), source.Raw(), port, portOk)
 		}
 		if ps := s.config.PeerStore; ps != nil {
 			go ps.AddPeer(
@@ -691,7 +691,6 @@ func (s *Server) writeToNode(ctx context.Context, b []byte, node Addr, wait, rat
 		}
 	}
 	addr := node.Raw()
-	log.Printf("setting default path for %s", addr.String())
 	appnet.SetDefaultPath(&addr)
 	n, err := s.socket.WriteTo(b, &addr)
 	writes.Add(1)
