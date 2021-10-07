@@ -341,8 +341,7 @@ func (s *Server) serve() error {
 			readBlocked.Add(1)
 			continue
 		}
-		udpAddr, _ := snet.ParseUDPAddr(addr.String())
-		s.processPacket(b[:n], NewAddr(*udpAddr))
+		s.processPacket(b[:n], NewAddr(*addr.(*snet.UDPAddr)))
 	}
 }
 
