@@ -38,7 +38,7 @@ func (me *InMemory) GetPeers(ih InfoHash) (ret []krpc.NodeAddr) {
 }
 
 func (me *InMemory) AddPeer(ih InfoHash, na krpc.NodeAddr) {
-	key := na.IA.String() + string(na.IP)
+	key := fmt.Sprintf("%s%s", na.IA.String(), na.IP.String())
 	me.mu.Lock()
 	defer me.mu.Unlock()
 	if me.index == nil {
