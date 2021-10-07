@@ -31,19 +31,14 @@ var _ interface {
 func (me *InMemory) GetPeers(ih InfoHash) (ret []krpc.NodeAddr) {
 	me.mu.RLock()
 	defer me.mu.RUnlock()
-	for b := range me.index[ih] {
-		var r krpc.NodeAddr
-		err := r.UnmarshalBinary([]byte(b))
-		if err != nil {
-			panic(err)
-		}
-		ret = append(ret, r)
+	for _, v := range me.index[ih] {
+		ret = append(ret, v.NodeAddr)
 	}
 	return
 }
 
 func (me *InMemory) AddPeer(ih InfoHash, na krpc.NodeAddr) {
-	key := string(na.IP)
+	key := na.IA.String() + string(na.IP)
 	me.mu.Lock()
 	defer me.mu.Unlock()
 	if me.index == nil {
