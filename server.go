@@ -260,6 +260,7 @@ func (s *Server) processPacket(b []byte, addr Addr) {
 	}
 	var d krpc.Msg
 	err := bencode.Unmarshal(b, &d)
+	log.Printf("msg: %+v\\n", d)
 	if _, ok := err.(bencode.ErrUnusedTrailingBytes); ok {
 		// log.Printf("%s: received message packet with %d trailing bytes: %q", s, _err.NumUnusedBytes, b[len(b)-_err.NumUnusedBytes:])
 		expvars.Add("processed packets with trailing bytes", 1)
