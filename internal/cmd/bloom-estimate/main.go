@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/willf/bloom"
+	"github.com/bits-and-blooms/bloom"
 )
 
 func main() {

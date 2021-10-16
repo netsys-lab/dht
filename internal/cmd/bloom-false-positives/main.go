@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/anacrolix/tagflag"
-	"github.com/willf/bloom"
+	"github.com/bits-and-blooms/bloom"
 )
 
 func main() {
