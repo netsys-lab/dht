@@ -1,7 +1,7 @@
 package dht
 
 import (
-	"github.com/bits-and-blooms/bloom"
+	"github.com/bits-and-blooms/bloom/v3"
 )
 
 func newBloomFilterForTraversal() *bloom.BloomFilter {
