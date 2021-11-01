@@ -259,7 +259,6 @@ func (s *Server) processPacket(b []byte, addr Addr) {
 	}
 	var d krpc.Msg
 	err := bencode.Unmarshal(b, &d)
-	log.Printf("msg: %+v\\n", d)
 	if _, ok := err.(bencode.ErrUnusedTrailingBytes); ok {
 		// log.Printf("%s: received message packet with %d trailing bytes: %q", s, _err.NumUnusedBytes, b[len(b)-_err.NumUnusedBytes:])
 		expvars.Add("processed packets with trailing bytes", 1)
@@ -622,6 +621,7 @@ func (s *Server) NodeRespondedToPing(addr Addr, id int160.T) {
 
 // Updates the node, adding it if appropriate.
 func (s *Server) updateNode(addr Addr, id *krpc.ID, tryAdd bool, update func(*node)) error {
+	s.logger().WithLevel(log.Info).Printf("refreshing node %v", addr)
 	if id == nil {
 		return errors.New("id is nil")
 	}
