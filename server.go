@@ -252,7 +252,6 @@ func (s *Server) IPBlocklist() iplist.Ranger {
 }
 
 func (s *Server) processPacket(b []byte, addr Addr) {
-	log.Printf("proccesing packet from: %s", addr.String())
 	if len(b) < 2 || b[0] != 'd' {
 		// KRPC messages are bencoded dicts.
 		readNotKRPCDict.Add(1)
@@ -325,7 +324,6 @@ func (s *Server) serve() error {
 		if err != nil {
 			return err
 		}
-		log.Printf("received packet...")
 		expvars.Add("packets read", 1)
 		if n == len(b) {
 			logonce.Stderr.Printf("received dht packet exceeds buffer size")
