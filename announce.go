@@ -97,8 +97,11 @@ func (s *Server) Announce(infoHash [20]byte, port int, impliedPort bool, opts ..
 	}()
 	go func() {
 		<-a.traversal.Stalled()
+		s.logger().WithLevel(log.Debug).Printf("stalled traversal")
 		a.traversal.Stop()
+		s.logger().WithLevel(log.Debug).Printf("stop traversal")
 		<-a.traversal.Stopped()
+		s.logger().WithLevel(log.Debug).Printf("stopped traversal")
 		a.announceClosest()
 		close(a.values)
 	}()
