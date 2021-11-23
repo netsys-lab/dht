@@ -7,11 +7,13 @@ import (
 	"github.com/netsys-lab/dht/int160"
 )
 
+const maxAmountOfBuckets = 160
+
 // Node table, with indexes on distance from root ID to bucket, and node addr.
 type table struct {
 	rootID  int160.T
 	k       int
-	buckets [160]bucket
+	buckets [maxAmountOfBuckets]bucket
 	addrs   map[string]map[int160.T]struct{}
 }
 
@@ -65,11 +67,11 @@ func (tbl *table) numNodes() (num int) {
 
 func (tbl *table) bucketIndex(id int160.T) int {
 	if id == tbl.rootID {
-		panic("nobody puts the root ID in a bucket")
+		return maxAmountOfBuckets - 1
 	}
 	var a int160.T
 	a.Xor(&tbl.rootID, &id)
-	index := 160 - a.BitLen()
+	index := maxAmountOfBuckets - a.BitLen()
 	return index
 }
 
@@ -111,9 +113,6 @@ func (tbl *table) closestNodes(k int, target int160.T, filter func(*node) bool) 
 }
 
 func (tbl *table) addNode(n *node) error {
-	if n.Id == tbl.rootID {
-		return errors.New("is root id")
-	}
 	b := &tbl.buckets[tbl.bucketIndex(n.Id)]
 	if b.GetNode(n.Addr, n.Id) != nil {
 		return errors.New("already present")
