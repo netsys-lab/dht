@@ -64,9 +64,6 @@ func (tbl *table) numNodes() (num int) {
 }
 
 func (tbl *table) bucketIndex(id int160.T) int {
-	if id == tbl.rootID {
-		panic("nobody puts the root ID in a bucket")
-	}
 	var a int160.T
 	a.Xor(&tbl.rootID, &id)
 	index := 160 - a.BitLen()

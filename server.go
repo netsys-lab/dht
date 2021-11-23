@@ -632,9 +632,6 @@ func (s *Server) updateNode(addr Addr, id *krpc.ID, tryAdd bool, update func(*no
 		if !tryAdd {
 			return errors.New("node not present and add flag false")
 		}
-		if int160Id == s.id {
-			return errors.New("can't store own id in routing table")
-		}
 		n = &node{nodeKey: nodeKey{
 			Id:   int160Id,
 			Addr: addr,
@@ -652,9 +649,6 @@ func (s *Server) nodeIsBad(n *node) bool {
 }
 
 func (s *Server) nodeErr(n *node) error {
-	if n.Id == s.id {
-		return errors.New("is self")
-	}
 	if n.Id.IsZero() {
 		return errors.New("has zero id")
 	}
