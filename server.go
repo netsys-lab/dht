@@ -432,7 +432,12 @@ func (s *Server) setReturnNodes(r *krpc.Return, queryMsg krpc.Msg, querySource A
 	if queryMsg.A == nil {
 		return &krpcErrMissingArguments
 	}
-	target := int160.FromByteArray(queryMsg.A.InfoHash)
+
+	var target = int160.FromByteArray(queryMsg.A.Target)
+	if queryMsg.Q == "get_peers" {
+		target = int160.FromByteArray(queryMsg.A.InfoHash)
+	}
+
 	if shouldReturnNodes(queryMsg.A.Want, querySource.IP()) {
 		r.Nodes = s.makeReturnNodes(target, func(na krpc.NodeAddr) bool { return na.IP.To4() != nil })
 	}

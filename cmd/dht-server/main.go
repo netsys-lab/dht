@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	peer_store "github.com/netsys-lab/dht/peer-store"
 	stdLog "log"
 	"net"
 	"os"
@@ -19,7 +20,10 @@ var (
 	flags = struct {
 		TableFile   string `help:"name of file for storing node info"`
 		NoBootstrap bool
-	}{}
+		NoSecurity  bool
+	}{
+		NoSecurity: true,
+	}
 	s *dht.Server
 )
 
@@ -53,7 +57,8 @@ func mainErr() error {
 	cfg := dht.NewDefaultServerConfig()
 	cfg.Conn = conn
 	cfg.Logger = log.Default.FilterLevel(log.Info)
-	cfg.NoSecurity = false
+	cfg.NoSecurity = flags.NoSecurity
+	cfg.PeerStore = &peer_store.InMemory{}
 	s, err = dht.NewServer(cfg)
 	if err != nil {
 		return err
